@@ -29,6 +29,16 @@ class FinanceTransactionRepository extends ServiceEntityRepository
         return $financeTransaction;
     }
 
+    public function findById(int $id): ?FinanceTransaction
+    {
+        return parent::find($id);
+    }
+
+    public function destroy(FinanceTransaction $financeTransaction): void
+    {
+        $this->getEntityManager()->remove($financeTransaction);
+    }
+
     //    /**
     //     * @return FinanceTransaction[] Returns an array of FinanceTransaction objects
     //     */

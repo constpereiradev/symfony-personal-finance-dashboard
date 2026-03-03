@@ -8,6 +8,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class UserController extends AbstractController
 {
+
+    //TODO: Cadastrar o usuário
     #[Route('/user', name: 'app_user')]
     public function index(): JsonResponse
     {

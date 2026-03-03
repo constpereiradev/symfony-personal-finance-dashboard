@@ -6,6 +6,7 @@ use App\DTOs\FinanceTransaction\CreateFinanceTransactionDto;
 use App\Entity\FinanceTransaction;
 use App\Enum\FinanceTransactionCategory;
 use App\Enum\FinanceTransactionType;
+use App\Repository\FinanceTransactionRepository;
 use App\Services\FinanceTransactionService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,7 +21,17 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/api/finance-transaction', name: 'app_finance_transaction')]
 final class FinanceTransactionController extends AbstractController
 {
-    public function __construct(private readonly FinanceTransactionService $financeTransactionService) {}
+
+    /**
+     * TODO: Adicionar try/catch. 
+     * Padronizar msgs de sucesso / erro
+     * Padronizar status code. 
+     * Retornar transações do usuário logado.
+     */
+    public function __construct(
+        private readonly FinanceTransactionService $financeTransactionService,
+        private readonly FinanceTransactionRepository $financeTransactionRepository
+    ) {}
 
     #[Route('', methods: ['GET'])]
     public function index(): JsonResponse
@@ -64,6 +75,27 @@ final class FinanceTransactionController extends AbstractController
         return $this->json([
             'message' => 'Finance transaction created successfully!',
             'finance_transaction' => $financeTransaction->toArray(),
-        ]);
+        ], 203);
+    }
+
+    public function update(Request $request) 
+    {
+        //TODO: Func. De atualizar
+    }
+
+    public function destroy(int $id)
+    {
+        $financeTransaction = $this->financeTransactionRepository->findById($id);
+
+        if (!$financeTransaction) {
+            return $this->json([
+                'message' => 'Transaction not found'
+            ], 400);
+        }
+        $this->financeTransactionRepository->destroy($financeTransaction);
+
+        return $this->json([
+            'message' => 'Finance transaction deleted successfully!'
+        ], 200);
     }
 }

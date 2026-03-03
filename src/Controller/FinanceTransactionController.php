@@ -14,12 +14,24 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints\Json;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/finance-transaction', name: 'app_finance_transaction')]
 final class FinanceTransactionController extends AbstractController
 {
     public function __construct(private readonly FinanceTransactionService $financeTransactionService) {}
+
+    #[Route('', methods: ['GET'])]
+    public function index(): JsonResponse
+    {
+        $financeTransactions = $this->financeTransactionService->getAll();
+
+        return $this->json([
+            'finance_transactions' => $financeTransactions,
+        ]);
+    }
+
 
     #[Route('', methods: ['POST'])]
     public function create(ValidatorInterface $validator, Request $request): JsonResponse

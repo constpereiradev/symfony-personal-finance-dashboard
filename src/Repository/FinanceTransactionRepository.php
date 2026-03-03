@@ -16,6 +16,11 @@ class FinanceTransactionRepository extends ServiceEntityRepository
         parent::__construct($registry, FinanceTransaction::class);
     }
 
+    public function findAll(): array
+    {
+        return parent::findAll();
+    }
+
     public function store(FinanceTransaction $financeTransaction): FinanceTransaction
     {
         $this->getEntityManager()->persist($financeTransaction);

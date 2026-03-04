@@ -130,7 +130,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return [
             'id' => $this->getId(),
             'email' => $this->getEmail(),
-            'password' => $this->getPassword()
+            'password' => $this->getPassword(),
+            'rules' => $this->getRoles(),
+            //'finance_transactions' => $this->getFinanceTransactions()
         ];
     }
 

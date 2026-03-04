@@ -8,17 +8,19 @@ use App\Entity\FinanceTransaction;
 use App\Infrastructure\Exceptions\FinanceTransactionException;
 use App\Repository\FinanceTransactionRepository;
 
-class FinanceTransactionService 
+class FinanceTransactionService
 {
-    public function __construct(private readonly FinanceTransactionRepository $financeTransactionRepository,
-    private readonly AuthService $authService) {}
+    public function __construct(
+        private readonly FinanceTransactionRepository $financeTransactionRepository,
+        private readonly AuthService $authService
+    ) {}
 
     public function getAll(): array
     {
         /** @var User */
         $user = $this->authService->getLoggedUser();
 
-        if(!$user){
+        if (!$user) {
             return [];
         }
 
@@ -64,22 +66,64 @@ class FinanceTransactionService
 
     public function update(FinanceTransaction $financeTransaction, UpdateFinanceTransactionDto $data): FinanceTransaction
     {
-        if(!empty($data->title)){
+        if (!empty($data->title)) {
             $financeTransaction->setTitle($data->title);
         }
 
-        if(!empty($data->value)){
+        if (!empty($data->value)) {
             $financeTransaction->setValue((float) $data->value);
         }
 
-        if(!empty($data->type)){
+        if (!empty($data->type)) {
             $financeTransaction->setType($data->type);
         }
 
-        if(!empty($data->category)){
+        if (!empty($data->category)) {
             $financeTransaction->setCategory($data->category);
         }
 
         return $this->financeTransactionRepository->update($financeTransaction, $data);
+    }
+
+    public function getUserSumarry(?array $data): array
+    {
+        $user = $this->authService->getLoggedUser();
+
+        $incomes = $this->financeTransactionRepository->getTotalIncome($user, $data);
+        $expenses = $this->financeTransactionRepository->getTotalExpense($user, $data);
+
+        $iteratedIcomes = $this->getIteratedIncomes($incomes);
+        $iteratedExpenses = $this->getIteratedExpenses($expenses);
+
+        return [
+            'incomes' => [
+                'transactions' => $iteratedIcomes,
+                'total' => array_sum(array_column($iteratedIcomes, 'value'))
+            ],
+            'expenses' => [
+                'transactions' => $iteratedExpenses,
+                'total' => array_sum(array_column($iteratedExpenses, 'value'))
+            ],
+        ];
+    }
+
+    public function getIteratedIncomes(array $incomes): array
+    {
+        return array_map(function ($incomes) {
+            return [
+                'id' => $incomes->getId(),
+                'value' => $incomes->getValue()
+            ];
+        }, $incomes);
+    }
+
+    public function getIteratedExpenses(array $expenses): array
+    {
+        return array_map(function ($expenses) {
+            return [
+                'id' => $expenses->getId(),
+                'value' => $expenses->getValue(),
+            ];
+        }, $expenses);
     }
 }

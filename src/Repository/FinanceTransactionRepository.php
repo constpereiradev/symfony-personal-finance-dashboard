@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\FinanceTransaction;
+use App\Entity\User;
+use App\Enum\FinanceTransactionType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -55,6 +57,50 @@ class FinanceTransactionRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->remove($financeTransaction);
         $this->getEntityManager()->flush();
+    }
+
+    public function getTotalIncome(?User $user = null, ?array $filters = []): array
+    {
+        $financeTransactions = $this->createQueryBuilder('f')
+            ->where('f.type = :type')
+            ->setParameter('type', FinanceTransactionType::INCOME);
+
+        if ($user) {
+            $financeTransactions = $financeTransactions
+                ->andWhere('f.user = :user')
+                ->setParameter('user', $user->getId());
+        }
+
+        return $financeTransactions->getQuery()
+            ->getResult();
+    }
+
+    public function getTotalExpense(?User $user = null, ?array $filters = [])
+    {
+        $financeTransactions = $this->createQueryBuilder('f')
+            ->where('f.type = :type')
+            ->setParameter('type', FinanceTransactionType::EXPENSE);
+
+        if (!empty($filters['from'])) {
+            $financeTransactions = $financeTransactions
+                ->andWhere('f.date >= :date')
+                ->setParameter('date', $filters['from']);
+        }
+
+        if (!empty($filters['to'])) {
+            $financeTransactions = $financeTransactions
+                ->andWhere('f.date <= :date')
+                ->setParameter('date', $filters['to']);
+        }
+
+        if ($user) {
+            $financeTransactions = $financeTransactions
+                ->andWhere('f.user = :user')
+                ->setParameter('user', $user->getId());
+        }
+
+        return $financeTransactions->getQuery()
+            ->getResult();
     }
 
     //    /**

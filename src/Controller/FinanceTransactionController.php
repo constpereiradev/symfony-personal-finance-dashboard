@@ -49,15 +49,10 @@ final class FinanceTransactionController extends Controller
             ? FinanceTransactionCategory::tryFrom($data['category'])
             : null;
 
+        $validationError = $this->validateRequest($validator, $dto);
 
-        $errors = $validator->validate($dto);
-
-        if (count($errors) > 0) {
-
-            return $this->json([
-                'message' => 'An error occured',
-                'errors' => $this->formatErrors($errors),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        if ($validationError) {
+            return $validationError;
         }
 
         $financeTransaction = $this->financeTransactionService->registerFinanceTransaction($dto);

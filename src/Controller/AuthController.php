@@ -2,29 +2,18 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Services\AuthService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/auth', name: 'app_auth')]
-final class AuthController extends AbstractController
+#[Route('/api/auth')]
+final class AuthController extends Controller
 {
-    #[Route('/login', methods: ['POST'])]
-    public function authenticate(): JsonResponse
-    {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/AuthController.php',
-            'token' => 'token'
-        ]);
-    }
+    public function __construct(
+        private readonly AuthService $authService
+    ) {}
 
-    #[Route('/logout', methods: ['POST'])]
-    public function logout(): JsonResponse
-    {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/AuthController.php',
-        ]);
-    }
+    #[Route('/login', methods: ['POST'], name: 'app_auth_login')]
+    public function authenticate() {}
+
 }

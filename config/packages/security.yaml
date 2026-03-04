@@ -12,11 +12,26 @@ security:
                 property: email
 
     firewalls:
+        login: 
+            pattern: '^/api/auth/login'
+            stateless: true
+            json_login:
+                check_path: /api/auth/login
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        api:
+            pattern: '^/api'
+            stateless: true
+            jwt: ~
         dev:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
         main:
+            login_throttling: 
+                max_attempts: 3
+                interval: '15 minutes'
+
             lazy: true
             provider: app_user_provider
 
@@ -28,8 +43,8 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

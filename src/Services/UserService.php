@@ -7,13 +7,15 @@ use App\Entity\User;
 use App\Infrastructure\Exceptions\UserException;
 use App\Repository\UserRepository;
 use Exception;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserService
 {
     public function __construct(
         private readonly UserRepository $userRepository,
-        private readonly UserPasswordHasherInterface $passwordHasher
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly Security $security
     ) {}
 
     public function register(CreateUserDto $dto)
@@ -33,5 +35,10 @@ class UserService
             $user,
             $plaintedPassword
         );
+    }
+
+    public function getLoggedUser(): ?User
+    {
+        return $this->security->getUser();
     }
 }

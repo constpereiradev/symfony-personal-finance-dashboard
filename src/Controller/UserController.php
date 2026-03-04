@@ -15,6 +15,18 @@ final class UserController extends Controller
 {
     public function __construct(private readonly UserService $userService) {}
 
+    #[Route('', methods: ['GET'])]
+    public function getLogged() 
+    {
+        /** @var User $user */
+        $user = $this->userService->getLoggedUser();
+
+        return $this->json([
+            'message' => 'Success',
+            'user' => $user->toArray()
+        ]);
+    }
+
     #[Route('', methods: ['POST'])]
     public function register(ValidatorInterface $validator, Request $request): JsonResponse
     {
@@ -24,13 +36,10 @@ final class UserController extends Controller
         $dto->email = $data['email'] ?? null;
         $dto->password = $data['password'] ?? null;
 
-        $errors = $validator->validate($dto);
+        $validationError = $this->validateRequest($validator, $dto);
 
-        if (count($errors) > 0) {
-            return $this->json([
-                'message' => 'An error occured',
-                'errors' => $this->formatErrors($errors),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        if ($validationError) {
+            return $validationError;
         }
 
         $user = $this->userService->register($dto);

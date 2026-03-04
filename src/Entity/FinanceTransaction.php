@@ -36,6 +36,13 @@ class FinanceTransaction
     #[Assert\NotBlank]
     private ?FinanceTransactionCategory $category = null;
 
+    #[ORM\Column]
+    private ?int $user_id = null;
+
+    #[ORM\ManyToOne(inversedBy: 'financeTransactions')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -108,7 +115,32 @@ class FinanceTransaction
             'title' => $this->getTitle(),
             'value' => (float) $this->getValue(),
             'type' => $this->getType(),
-            'category' => $this->getCategory()
+            'category' => $this->getCategory(),
+            'user' => $this->getUser()->toArray()
         ];
+    }
+
+    public function getUserId(): ?int
+    {
+        return $this->user_id;
+    }
+
+    public function setUserId(int $user_id): static
+    {
+        $this->user_id = $user_id;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
     }
 }

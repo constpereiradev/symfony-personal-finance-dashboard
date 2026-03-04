@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -30,6 +32,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, FinanceTransaction>
+     */
+    #[ORM\OneToMany(targetEntity: FinanceTransaction::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $financeTransactions;
+
+    public function __construct()
+    {
+        $this->financeTransactions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -119,5 +132,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             'email' => $this->getEmail(),
             'password' => $this->getPassword()
         ];
+    }
+
+    /**
+     * @return Collection<int, FinanceTransaction>
+     */
+    public function getFinanceTransactions(): Collection
+    {
+        return $this->financeTransactions;
+    }
+
+    public function addFinanceTransaction(FinanceTransaction $financeTransaction): static
+    {
+        if (!$this->financeTransactions->contains($financeTransaction)) {
+            $this->financeTransactions->add($financeTransaction);
+            $financeTransaction->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFinanceTransaction(FinanceTransaction $financeTransaction): static
+    {
+        if ($this->financeTransactions->removeElement($financeTransaction)) {
+            // set the owning side to null (unless already changed)
+            if ($financeTransaction->getUser() === $this) {
+                $financeTransaction->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }

@@ -10,7 +10,8 @@ use App\Repository\FinanceTransactionRepository;
 
 class FinanceTransactionService 
 {
-    public function __construct(private readonly FinanceTransactionRepository $financeTransactionRepository) {}
+    public function __construct(private readonly FinanceTransactionRepository $financeTransactionRepository,
+    private readonly AuthService $authService) {}
 
     public function getAll()
     {
@@ -23,7 +24,8 @@ class FinanceTransactionService
                 'value' => $transaction->getValue(),
                 'type' => $transaction->getType()->value,
                 'category' => $transaction->getCategory()->value,
-                'date' => $transaction->getDate()
+                'date' => $transaction->getDate(),
+                'user' => $transaction->getUser()->toArray()
             ];
         }, $financeTransactions);
     }
@@ -36,6 +38,7 @@ class FinanceTransactionService
         $financeTransaction->setDate(new \DateTime());
         $financeTransaction->setType($data->type);
         $financeTransaction->setCategory($data->category);
+        $financeTransaction->setUser($this->authService->getLoggedUser());
 
         return $this->financeTransactionRepository->store($financeTransaction);
     }

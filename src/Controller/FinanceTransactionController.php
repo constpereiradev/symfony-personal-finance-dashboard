@@ -18,10 +18,11 @@ final class FinanceTransactionController extends Controller
 {
 
     /**
-     * TODO: Adicionar try/catch. 
+     * TODO: Customizar try/catch. 
      * Padronizar msgs de sucesso / erro
      * Padronizar status code. 
      * Retornar transações do usuário logado.
+     * Pegar exceções no try catch
      */
     public function __construct(
         private readonly FinanceTransactionService $financeTransactionService,
@@ -31,79 +32,102 @@ final class FinanceTransactionController extends Controller
     #[Route('', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        $financeTransactions = $this->financeTransactionService->getAll();
+        try {
+            $financeTransactions = $this->financeTransactionService->getAll();
 
-        return $this->json([
-            'finance_transactions' => $financeTransactions,
-        ]);
+            return $this->json([
+                'finance_transactions' => $financeTransactions,
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
 
     #[Route('', methods: ['POST'])]
     public function create(ValidatorInterface $validator, Request $request): JsonResponse
     {
-        $data = $request->toArray();
-        $dto = new CreateFinanceTransactionDto();
-        $dto->title = $data['title'] ?? null;
-        $dto->value = $data['value'] ?? null;
-        $dto->type = isset($data['type'])
-            ? FinanceTransactionType::tryFrom($data['type'])
-            : null;
+        try {
+            $data = $request->toArray();
+            $dto = new CreateFinanceTransactionDto();
+            $dto->title = $data['title'] ?? null;
+            $dto->value = $data['value'] ?? null;
+            $dto->type = isset($data['type'])
+                ? FinanceTransactionType::tryFrom($data['type'])
+                : null;
 
-        $dto->category = isset($data['category'])
-            ? FinanceTransactionCategory::tryFrom($data['category'])
-            : null;
+            $dto->category = isset($data['category'])
+                ? FinanceTransactionCategory::tryFrom($data['category'])
+                : null;
 
 
 
-        $errors = $validator->validate($dto);
+            $errors = $validator->validate($dto);
 
-        if (count($errors) > 0) {
+            if (count($errors) > 0) {
+
+                return $this->json([
+                    'errors' => $this->formatErrors($errors),
+                ], 400);
+            }
+
+            $financeTransaction = $this->financeTransactionService->registerFinanceTransaction($dto);
 
             return $this->json([
-                'errors' => $this->formatErrors($errors),
-            ], 400);
+                'message' => 'Finance transaction created successfully!',
+                'finance_transaction' => $financeTransaction->toArray(),
+            ], 203);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => $e->getMessage()
+            ]);
         }
-
-        $financeTransaction = $this->financeTransactionService->registerFinanceTransaction($dto);
-
-        return $this->json([
-            'message' => 'Finance transaction created successfully!',
-            'finance_transaction' => $financeTransaction->toArray(),
-        ], 203);
     }
 
     #[Route('/{id}', methods: ['PUT'])]
     public function update(Request $request, int $id)
     {
-        $data = $request->toArray();
-        $dto = new UpdateFinanceTransactionDto();
-        $dto->title = $data['title'] ?? null;
-        $dto->value = $data['value'] ?? null;
-        $dto->type = isset($data['type']) ? 
-        FinanceTransactionType::tryFrom($data['type']) : null;
-        $dto->category = isset($data['category']) ? 
-        FinanceTransactionCategory::tryFrom($data['category']) : null;
+        try {
+            $data = $request->toArray();
+            $dto = new UpdateFinanceTransactionDto();
+            $dto->title = $data['title'] ?? null;
+            $dto->value = $data['value'] ?? null;
+            $dto->type = isset($data['type']) ?
+                FinanceTransactionType::tryFrom($data['type']) : null;
+            $dto->category = isset($data['category']) ?
+                FinanceTransactionCategory::tryFrom($data['category']) : null;
 
 
-        $financeTransaction = $this->financeTransactionService->findFinanceTransactionByIdOrFail($id);
-        $updatedFinanceTransaction = $this->financeTransactionService->update($financeTransaction, $dto);
+            $financeTransaction = $this->financeTransactionService->findFinanceTransactionByIdOrFail($id);
+            $updatedFinanceTransaction = $this->financeTransactionService->update($financeTransaction, $dto);
 
-        return $this->json([
-            'message' => 'Finance transaction updated successfully!',
-            'finance_transaction' => $updatedFinanceTransaction->toArray()
-        ]);
-        
+            return $this->json([
+                'message' => 'Finance transaction updated successfully!',
+                'finance_transaction' => $updatedFinanceTransaction->toArray()
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     #[Route('/{id}', methods: ['DELETE'])]
     public function destroy(int $id)
     {
-        $financeTransaction = $this->financeTransactionService->findFinanceTransactionByIdOrFail($id);
-        $this->financeTransactionRepository->destroy($financeTransaction);
+        try {
+            $financeTransaction = $this->financeTransactionService->findFinanceTransactionByIdOrFail($id);
+            $this->financeTransactionRepository->destroy($financeTransaction);
 
-        return $this->json([
-            'message' => 'Finance transaction deleted successfully!'
-        ], 200);
+            return $this->json([
+                'message' => 'Finance transaction deleted successfully!'
+            ], 200);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

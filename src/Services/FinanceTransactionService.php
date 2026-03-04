@@ -13,9 +13,16 @@ class FinanceTransactionService
     public function __construct(private readonly FinanceTransactionRepository $financeTransactionRepository,
     private readonly AuthService $authService) {}
 
-    public function getAll()
+    public function getAll(): array
     {
-        $financeTransactions = $this->financeTransactionRepository->findAll();
+        /** @var User */
+        $user = $this->authService->getLoggedUser();
+
+        if(!$user){
+            return [];
+        }
+
+        $financeTransactions = $this->financeTransactionRepository->findByUser((int) $user->getId());
 
         return array_map(function (FinanceTransaction $transaction) {
             return [

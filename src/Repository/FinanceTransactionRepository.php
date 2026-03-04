@@ -34,6 +34,15 @@ class FinanceTransactionRepository extends ServiceEntityRepository
         return parent::find($id);
     }
 
+    public function findByUser(int $userId): ?array
+    {
+        return $this->createQueryBuilder('f')
+            ->where('f.user = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function update(FinanceTransaction $financeTransaction)
     {
         $this->getEntityManager()->persist($financeTransaction);

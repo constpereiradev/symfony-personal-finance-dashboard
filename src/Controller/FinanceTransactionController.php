@@ -3,23 +3,18 @@
 namespace App\Controller;
 
 use App\DTOs\FinanceTransaction\CreateFinanceTransactionDto;
-use App\Entity\FinanceTransaction;
+use App\DTOs\FinanceTransaction\UpdateFinanceTransactionDto;
 use App\Enum\FinanceTransactionCategory;
 use App\Enum\FinanceTransactionType;
 use App\Repository\FinanceTransactionRepository;
 use App\Services\FinanceTransactionService;
-use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Constraints\Json;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/finance-transaction', name: 'app_finance_transaction')]
-final class FinanceTransactionController extends AbstractController
+final class FinanceTransactionController extends Controller
 {
 
     /**
@@ -78,20 +73,33 @@ final class FinanceTransactionController extends AbstractController
         ], 203);
     }
 
-    public function update(Request $request) 
+    #[Route('/{id}', methods: ['PUT'])]
+    public function update(Request $request, int $id)
     {
-        //TODO: Func. De atualizar
+        $data = $request->toArray();
+        $dto = new UpdateFinanceTransactionDto();
+        $dto->title = $data['title'] ?? null;
+        $dto->value = $data['value'] ?? null;
+        $dto->type = isset($data['type']) ? 
+        FinanceTransactionType::tryFrom($data['type']) : null;
+        $dto->category = isset($data['category']) ? 
+        FinanceTransactionCategory::tryFrom($data['category']) : null;
+
+
+        $financeTransaction = $this->financeTransactionService->findFinanceTransactionByIdOrFail($id);
+        $updatedFinanceTransaction = $this->financeTransactionService->update($financeTransaction, $dto);
+
+        return $this->json([
+            'message' => 'Finance transaction updated successfully!',
+            'finance_transaction' => $updatedFinanceTransaction->toArray()
+        ]);
+        
     }
 
+    #[Route('/{id}', methods: ['DELETE'])]
     public function destroy(int $id)
     {
-        $financeTransaction = $this->financeTransactionRepository->findById($id);
-
-        if (!$financeTransaction) {
-            return $this->json([
-                'message' => 'Transaction not found'
-            ], 400);
-        }
+        $financeTransaction = $this->financeTransactionService->findFinanceTransactionByIdOrFail($id);
         $this->financeTransactionRepository->destroy($financeTransaction);
 
         return $this->json([

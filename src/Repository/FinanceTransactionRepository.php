@@ -34,9 +34,18 @@ class FinanceTransactionRepository extends ServiceEntityRepository
         return parent::find($id);
     }
 
+    public function update(FinanceTransaction $financeTransaction)
+    {
+        $this->getEntityManager()->persist($financeTransaction);
+        $this->getEntityManager()->flush();
+
+        return $financeTransaction;
+    }
+
     public function destroy(FinanceTransaction $financeTransaction): void
     {
         $this->getEntityManager()->remove($financeTransaction);
+        $this->getEntityManager()->flush();
     }
 
     //    /**

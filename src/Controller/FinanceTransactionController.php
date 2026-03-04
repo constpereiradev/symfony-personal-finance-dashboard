@@ -6,10 +6,8 @@ use App\DTOs\FinanceTransaction\CreateFinanceTransactionDto;
 use App\DTOs\FinanceTransaction\UpdateFinanceTransactionDto;
 use App\Enum\FinanceTransactionCategory;
 use App\Enum\FinanceTransactionType;
-use App\Infrastructure\Exceptions\FinanceTransactionException;
 use App\Repository\FinanceTransactionRepository;
 use App\Services\FinanceTransactionService;
-use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,14 +17,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/api/finance-transaction', name: 'app_finance_transaction')]
 final class FinanceTransactionController extends Controller
 {
-
-    /**
-     * TODO: Customizar try/catch. 
-     * Padronizar msgs de sucesso / erro
-     * Padronizar status code. 
-     * Retornar transações do usuário logado.
-     * Pegar exceções no try catch
-     */
     public function __construct(
         private readonly FinanceTransactionService $financeTransactionService,
         private readonly FinanceTransactionRepository $financeTransactionRepository
@@ -38,6 +28,7 @@ final class FinanceTransactionController extends Controller
         $financeTransactions = $this->financeTransactionService->getAll();
 
         return $this->json([
+            'message' => 'Success',
             'finance_transactions' => $financeTransactions,
         ]);
     }
@@ -59,14 +50,14 @@ final class FinanceTransactionController extends Controller
             : null;
 
 
-
         $errors = $validator->validate($dto);
 
         if (count($errors) > 0) {
 
             return $this->json([
+                'message' => 'An error occured',
                 'errors' => $this->formatErrors($errors),
-            ], 400);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         $financeTransaction = $this->financeTransactionService->registerFinanceTransaction($dto);
@@ -74,7 +65,7 @@ final class FinanceTransactionController extends Controller
         return $this->json([
             'message' => 'Finance transaction created successfully!',
             'finance_transaction' => $financeTransaction->toArray(),
-        ], 203);
+        ], Response::HTTP_CREATED);
     }
 
 
@@ -107,6 +98,6 @@ final class FinanceTransactionController extends Controller
 
         return $this->json([
             'message' => 'Finance transaction deleted successfully!'
-        ], 200);
+        ]);
     }
 }

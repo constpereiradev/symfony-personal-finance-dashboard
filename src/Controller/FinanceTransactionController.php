@@ -6,10 +6,13 @@ use App\DTOs\FinanceTransaction\CreateFinanceTransactionDto;
 use App\DTOs\FinanceTransaction\UpdateFinanceTransactionDto;
 use App\Enum\FinanceTransactionCategory;
 use App\Enum\FinanceTransactionType;
+use App\Infrastructure\Exceptions\FinanceTransactionException;
 use App\Repository\FinanceTransactionRepository;
 use App\Services\FinanceTransactionService;
+use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -99,7 +102,6 @@ final class FinanceTransactionController extends Controller
             $dto->category = isset($data['category']) ?
                 FinanceTransactionCategory::tryFrom($data['category']) : null;
 
-
             $financeTransaction = $this->financeTransactionService->findFinanceTransactionByIdOrFail($id);
             $updatedFinanceTransaction = $this->financeTransactionService->update($financeTransaction, $dto);
 
@@ -107,10 +109,15 @@ final class FinanceTransactionController extends Controller
                 'message' => 'Finance transaction updated successfully!',
                 'finance_transaction' => $updatedFinanceTransaction->toArray()
             ]);
-        } catch (\Exception $e) {
+        } catch (FinanceTransactionException $e) {
             return $this->json([
                 'error' => $e->getMessage()
-            ]);
+            ], $e->getStatusCode());
+        } catch (Exception $e) {
+            return $this->json(
+                ['error' => 'Internal server error'],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\FinanceTransaction\CreateFinanceTransactionDto;
 use App\DTOs\FinanceTransaction\UpdateFinanceTransactionDto;
 use App\Entity\FinanceTransaction;
+use App\Infrastructure\Exceptions\FinanceTransactionException;
 use App\Repository\FinanceTransactionRepository;
 
 class FinanceTransactionService 
@@ -45,7 +46,7 @@ class FinanceTransactionService
         $financeTransaction = $this->financeTransactionRepository->findById($id);
 
         if (!$financeTransaction) {
-            throw new \DomainException('Transaction not found');
+            throw FinanceTransactionException::financeTransactionNotFound();
         }
 
         return $financeTransaction;

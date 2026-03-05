@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260304194223 extends AbstractMigration
+final class Version20260305144307 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,7 +20,8 @@ final class Version20260304194223 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE finance_transaction ADD user_id INT NOT NULL');
+        $this->addSql('CREATE TABLE refresh_token (id INT AUTO_INCREMENT NOT NULL, token VARCHAR(255) NOT NULL, expires_at DATETIME NOT NULL, user_id INT NOT NULL, INDEX IDX_C74F2195A76ED395 (user_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
+        $this->addSql('ALTER TABLE refresh_token ADD CONSTRAINT FK_C74F2195A76ED395 FOREIGN KEY (user_id) REFERENCES user (id)');
         $this->addSql('ALTER TABLE finance_transaction ADD CONSTRAINT FK_8D0AD41AA76ED395 FOREIGN KEY (user_id) REFERENCES user (id)');
         $this->addSql('CREATE INDEX IDX_8D0AD41AA76ED395 ON finance_transaction (user_id)');
     }
@@ -28,8 +29,9 @@ final class Version20260304194223 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE refresh_token DROP FOREIGN KEY FK_C74F2195A76ED395');
+        $this->addSql('DROP TABLE refresh_token');
         $this->addSql('ALTER TABLE finance_transaction DROP FOREIGN KEY FK_8D0AD41AA76ED395');
         $this->addSql('DROP INDEX IDX_8D0AD41AA76ED395 ON finance_transaction');
-        $this->addSql('ALTER TABLE finance_transaction DROP user_id');
     }
 }

@@ -82,15 +82,21 @@ class FinanceTransactionRepository extends ServiceEntityRepository
             ->setParameter('type', FinanceTransactionType::EXPENSE);
 
         if (!empty($filters['from'])) {
+            $from = new \DateTime($filters['from']);
+            $from->setTime(0, 0, 0);
+
             $financeTransactions = $financeTransactions
-                ->andWhere('f.date >= :date')
-                ->setParameter('date', $filters['from']);
+                ->andWhere('f.date >= :from')
+                ->setParameter('from', $from);
         }
 
         if (!empty($filters['to'])) {
+            $to = new \DateTime($filters['to']);
+            $to->setTime(23, 59, 59);
+
             $financeTransactions = $financeTransactions
-                ->andWhere('f.date <= :date')
-                ->setParameter('date', $filters['to']);
+                ->andWhere('f.date <= :to')
+                ->setParameter('to', $to);
         }
 
         if ($user) {

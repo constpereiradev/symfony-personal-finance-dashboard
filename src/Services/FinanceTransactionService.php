@@ -92,18 +92,22 @@ class FinanceTransactionService
         $incomes = $this->financeTransactionRepository->getTotalIncome($user, $data);
         $expenses = $this->financeTransactionRepository->getTotalExpense($user, $data);
 
-        $iteratedIcomes = $this->getIteratedIncomes($incomes);
+        $iteratedIncomes = $this->getIteratedIncomes($incomes);
         $iteratedExpenses = $this->getIteratedExpenses($expenses);
+
+        $totalIncomes = array_sum(array_column($iteratedIncomes, 'value'));
+        $totalExpenses = array_sum(array_column($iteratedExpenses, 'value'));
 
         return [
             'incomes' => [
-                'transactions' => $iteratedIcomes,
-                'total' => array_sum(array_column($iteratedIcomes, 'value'))
+                'transactions' => $iteratedIncomes,
+                'total' => $totalIncomes,
             ],
             'expenses' => [
                 'transactions' => $iteratedExpenses,
-                'total' => array_sum(array_column($iteratedExpenses, 'value'))
+                'total' => $totalExpenses
             ],
+            'balance' => $totalIncomes - $totalExpenses,
         ];
     }
 
@@ -112,7 +116,9 @@ class FinanceTransactionService
         return array_map(function ($incomes) {
             return [
                 'id' => $incomes->getId(),
-                'value' => $incomes->getValue()
+                'value' => $incomes->getValue(),
+                'category' => $incomes->getCategory(),
+                'title' => $incomes->getTitle()
             ];
         }, $incomes);
     }
@@ -123,6 +129,8 @@ class FinanceTransactionService
             return [
                 'id' => $expenses->getId(),
                 'value' => $expenses->getValue(),
+                'category' => $expenses->getCategory(),
+                'title' => $expenses->getTitle()
             ];
         }, $expenses);
     }

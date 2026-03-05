@@ -22,7 +22,7 @@ final class DashboardController extends AbstractController
 
         return $this->json([
             'message' => 'Success',
-            'sumarry' => $this->financeTransactionService->getUserSumarry($data)
+            'summary' => $this->financeTransactionService->getUserSumarry($data)
         ]);
     }
 }
